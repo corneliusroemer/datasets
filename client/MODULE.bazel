@@ -19,19 +19,8 @@ go_deps.from_file(go_work = "//go:go.work")
 # All *direct* Go dependencies of the module have to be listed explicitly.
 use_repo(
     go_deps,
-    "com_github_antihax_optional",
-    "com_github_araddon_dateparse",
-    "com_github_docker_go_units",
     "com_github_gosuri_uiprogress",
-    "com_github_hashicorp_go_cleanhttp",
-    "com_github_hashicorp_go_retryablehttp",
-    "com_github_spf13_afero",
     "com_github_spf13_cobra",
-    "com_github_spf13_pflag",
-    "com_github_thediveo_enumflag",
-    "com_gitlab_metakeule_fmtdate",
-    "org_golang_x_exp",
-    "org_golang_x_text",
 )
 
 ###########
@@ -39,7 +28,6 @@ use_repo(
 ###########
 
 bazel_dep(name = "aspect_bazel_lib", version = "1.38.1")
-
 bazel_dep(name = "openapi_tools_generator_bazel", version = "0.2.0")
 
 openapi_gen = use_extension("@openapi_tools_generator_bazel//:extension.bzl", "openapi_gen")
