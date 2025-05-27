@@ -16,7 +16,6 @@ import (
 
 	// cmdflags "datasets_cli/v2/datasets/flags"
 
-	"github.com/gosuri/uiprogress"
 	"github.com/spf13/cobra"
 	// openapi "datasets/openapi/v2"
 )
@@ -30,7 +29,7 @@ var (
 
 	request_count    uint64
 	request_count_mu sync.Mutex
-	progress         *uiprogress.Progress
+	// progress         *uiprogress.Progress
 )
 
 const dateFormat = "MM/DD/YYYY"
