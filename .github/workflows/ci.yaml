@@ -8,7 +8,13 @@ defaults:
     working-directory: ./client
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on:
+        - ubuntu-latest
+        - ubuntu-24.04-arm
+        - macos-latest # arm64
+        - macos-13 # osx-64
+        - windows-latest
+        - windows-11-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,4 +47,4 @@ jobs:
         if: success()
         with:
           name: datasets-binary
-          path: bazel-bin/apps/public/Datasets/v2/cmd/datasets/datasets_/datasets
+          path: client/bazel-bin/apps/public/Datasets/v2/cmd/datasets/datasets_/datasets
