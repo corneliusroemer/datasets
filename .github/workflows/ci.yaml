@@ -1,0 +1,45 @@
+name: Build and Test
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+defaults:
+  run:
+    working-directory: ./client
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        #   - name: Set up Go
+        #     uses: actions/setup-go@v5
+        #     with:
+        #       go-version: '1.21' # Adjust version as needed
+        #   - name: Install Bazelisk
+        #     run: |
+        #       curl -LO "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64"
+        #       chmod +x bazelisk-linux-amd64
+        #       sudo mv bazelisk-linux-amd64 /usr/local/bin/bazel
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      - name: Add workdir to PATH
+        run: |
+          echo "$(pwd)" >> $GITHUB_PATH
+      - name: Build
+        run: bazel build apps/public/Datasets/...
+      - name: Smoke test
+        run: |
+          ./bazel-bin/apps/public/Datasets/v2/cmd/datasets/datasets_/datasets
+          ./bazel-bin/apps/public/Datasets/v2/cmd/datasets/datasets_/datasets \
+            download virus genome taxon 101947
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: datasets-binary
+          path: bazel-bin/apps/public/Datasets/v2/cmd/datasets/datasets_/datasets
