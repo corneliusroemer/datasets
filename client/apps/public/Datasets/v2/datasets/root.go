@@ -10,22 +10,18 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	datasets_util "datasets/util"
-	datasets_command "datasets/util/command"
-	cmdflags "datasets_cli/v2/datasets/flags"
+	// cmdflags "datasets_cli/v2/datasets/flags"
 
 	"github.com/gosuri/uiprogress"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	retry_http "github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
-
-	openapi "datasets/openapi/v2"
+	// openapi "datasets/openapi/v2"
 )
 
 var (
@@ -60,28 +56,28 @@ var (
 const dateFormat = "MM/DD/YYYY"
 
 // TODO: give these loose global flag vars extensible structuring
-var globalDebugFlag = cmdflags.NewDebugFlag()
+// var globalDebugFlag = cmdflags.NewDebugFlag()
 
-func versionRunE(cmd *cobra.Command, args []string) error {
-	fmt.Println("datasets version:", AppVersion)
-	cli, err := createOAClient()
-	if err != nil {
-		return err
-	}
-	_, resp, err := cli.VersionAPI.Version(context.TODO()).Execute()
-	if err == nil {
-		return checkResponseHeaders(resp)
-	}
-	if resp != nil && resp.StatusCode >= 300 {
-		msg := getGatewayRuntimeError(err)
-		if msg != "" {
-			err = errors.New("[gateway] " + msg)
-		} else {
-			err = errors.New(resp.Status)
-		}
-	}
-	return err
-}
+// func versionRunE(cmd *cobra.Command, args []string) error {
+// 	fmt.Println("datasets version:", AppVersion)
+// 	cli, err := createOAClient()
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, resp, err := cli.VersionAPI.Version(context.TODO()).Execute()
+// 	if err == nil {
+// 		return checkResponseHeaders(resp)
+// 	}
+// 	if resp != nil && resp.StatusCode >= 300 {
+// 		msg := getGatewayRuntimeError(err)
+// 		if msg != "" {
+// 			err = errors.New("[gateway] " + msg)
+// 		} else {
+// 			err = errors.New(resp.Status)
+// 		}
+// 	}
+// 	return err
+// }
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -161,7 +157,7 @@ var versionCmd = &cobra.Command{
 	Long:   "Print the version of this client and exit.",
 	Hidden: true,
 	Args:   cobra.MaximumNArgs(0),
-	RunE:   versionRunE,
+	// RunE:   versionRunE,
 }
 
 // DefaultRetryPolicy provides a default callback for Client.CheckRetry, which
@@ -245,42 +241,42 @@ func initRetryableClient() *http.Client {
 	return c
 }
 
-func createOAClient() (cli *openapi.APIClient, err error) {
-	cfg := openapi.NewConfiguration()
+// func createOAClient() (cli *openapi.APIClient, err error) {
+// 	cfg := openapi.NewConfiguration()
 
-	cfg.HTTPClient = initRetryableClient()
+// 	cfg.HTTPClient = initRetryableClient()
 
-	for k, v := range clientHeaders {
-		cfg.AddDefaultHeader(k, v)
-	}
+// 	for k, v := range clientHeaders {
+// 		cfg.AddDefaultHeader(k, v)
+// 	}
 
-	if argSynMon {
-		cfg.UserAgent = "datasets/monitoring/datasets_cli"
-	}
+// 	if argSynMon {
+// 		cfg.UserAgent = "datasets/monitoring/datasets_cli"
+// 	}
 
-	if err = updateOATransportConfig(cfg, argGatewayURL); err != nil {
-		return
-	}
-	if globalDebugFlag.Debug() {
-		cfg.Debug = true
-	}
-	cli = openapi.NewAPIClient(cfg)
-	return
-}
+// 	if err = updateOATransportConfig(cfg, argGatewayURL); err != nil {
+// 		return
+// 	}
+// 	if globalDebugFlag.Debug() {
+// 		cfg.Debug = true
+// 	}
+// 	cli = openapi.NewAPIClient(cfg)
+// 	return
+// }
 
-func updateOATransportConfig(cfg *openapi.Configuration, gatewayURL string) (err error) {
-	if gatewayURL == "" {
-		return
-	}
+// func updateOATransportConfig(cfg *openapi.Configuration, gatewayURL string) (err error) {
+// 	if gatewayURL == "" {
+// 		return
+// 	}
 
-	configs := openapi.ServerConfigurations{
-		{
-			URL: gatewayURL,
-		},
-	}
-	cfg.Servers = configs
-	return
-}
+// 	configs := openapi.ServerConfigurations{
+// 		{
+// 			URL: gatewayURL,
+// 		},
+// 	}
+// 	cfg.Servers = configs
+// 	return
+// }
 
 func checkResponseHeaders(resp *http.Response) (err error) {
 	if resp == nil {
@@ -370,14 +366,14 @@ func ParentCommandRunE(*cobra.Command, []string) error {
 	return fmt.Errorf("Continue with one of the sub-commands")
 }
 
-func getGatewayRuntimeError(err error) string {
-	if openAPIErr, ok := err.(openapi.GenericOpenAPIError); ok {
-		model := openAPIErr.Model()
-		status := model.(openapi.RpcStatus)
-		return status.GetMessage()
-	}
-	return err.Error()
-}
+// func getGatewayRuntimeError(err error) string {
+// 	if openAPIErr, ok := err.(openapi.GenericOpenAPIError); ok {
+// 		model := openAPIErr.Model()
+// 		status := model.(openapi.RpcStatus)
+// 		return status.GetMessage()
+// 	}
+// 	return err.Error()
+// }
 
 func handleHTTPResponseError(resp *http.Response, inError error) (err error) {
 	if inError == nil {
@@ -385,11 +381,11 @@ func handleHTTPResponseError(resp *http.Response, inError error) (err error) {
 		return
 	}
 	rootCmd.SilenceUsage = true
-	msg := getGatewayRuntimeError(inError)
-	if msg != "" {
-		err = errors.New("[gateway] " + msg)
-		return
-	}
+	// msg := getGatewayRuntimeError(inError)
+	// if msg != "" {
+	// 	err = errors.New("[gateway] " + msg)
+	// 	return
+	// }
 
 	if resp != nil && resp.StatusCode >= 300 {
 		err = errors.New(resp.Status)
@@ -401,29 +397,34 @@ func handleHTTPResponseError(resp *http.Response, inError error) (err error) {
 }
 
 func handleHTTPResponseWithCustomErr(resp *http.Response, inError error, printfTemplate string) (err error) {
-	e := CreateErrorMessageFromMessageOrError(resp, inError, printfTemplate)
-	err = handleHTTPResponseError(resp, e)
+	// e := CreateErrorMessageFromMessageOrError(resp, inError, printfTemplate)
+	// err = handleHTTPResponseError(resp, e)
 	return
 }
 
 func handleHTTPResponse(resp *http.Response, inError error) (err error) {
-	e := CreateErrorMessageFromMessageOrError(resp, inError, "Gateway Error (%s)")
-	err = handleHTTPResponseError(resp, e)
+	// e := CreateErrorMessageFromMessageOrError(resp, inError, "Gateway Error (%s)")
+	// err = handleHTTPResponseError(resp, e)
 	return
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	exitval := 0
-	err := rootCmd.Execute()
-	if err != nil {
-		exitval = 1
-	}
-	if userMessage != "" {
-		exitval = 1
-	}
-	os.Exit(exitval)
+	// fmt.Fprintln(os.Stderr, "DEBUG: Starting Execute()")
+	// exitval := 0
+	//err := rootCmd.Execute()
+	// fmt.Fprintln(os.Stderr, "DEBUG: rootCmd.Execute() returned")
+	// if err != nil {
+	// 	exitval = 1
+	// }
+	// if userMessage != "" {
+	// 	exitval = 1
+	// }
+	fmt.Fprintln(os.Stderr, "DEBUG: About to call os.Exit()")
+	os.Exit(0)
+	fmt.Fprintln(os.Stderr, "DEBUG: Code should never reach here")
+	return
 }
 
 func GeneratePHID() string {
@@ -470,99 +471,99 @@ func setVersionRecursively(cmd *cobra.Command) {
 }
 
 func init() {
-	progress = uiprogress.New()
-	progress.SetOut(os.Stderr)
+	// progress = uiprogress.New()
+	// progress.SetOut(os.Stderr)
 
-	datasets_util.AddUsageSections(
-		"datasets",
-		&datasets_util.UsageSections{
-			&datasets_util.UsageSection{
-				SectionText: "Data Retrieval Commands",
-				Commands:    []string{"summary", "download", "rehydrate"},
-			},
-			&datasets_util.UsageSection{
-				SectionText: "Miscellaneous Commands",
-				Commands:    []string{"completion", "version", "help"},
-			},
-		},
-	)
-	rootCmd.SetUsageTemplate(getUsageTemplate())
-	rootCmd.SetHelpTemplate(getHelpTemplate())
-	rootCmd.SetVersionTemplate("datasets version: {{.Version}}\n")
+	// datasets_util.AddUsageSections(
+	// 	"datasets",
+	// 	&datasets_util.UsageSections{
+	// 		&datasets_util.UsageSection{
+	// 			SectionText: "Data Retrieval Commands",
+	// 			Commands:    []string{"summary", "download", "rehydrate"},
+	// 		},
+	// 		&datasets_util.UsageSection{
+	// 			SectionText: "Miscellaneous Commands",
+	// 			Commands:    []string{"completion", "version", "help"},
+	// 		},
+	// 	},
+	// )
+	// rootCmd.SetUsageTemplate(getUsageTemplate())
+	// rootCmd.SetHelpTemplate(getHelpTemplate())
+	// rootCmd.SetVersionTemplate("datasets version: {{.Version}}\n")
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	pFlags := rootCmd.PersistentFlags()
-	cmdflags.RegisterAllFlags([]cmdflags.FlagInterface{globalDebugFlag}, pFlags)
-	pFlags.StringVar(&argApiKey, "api-key", useEnv("NCBI_API_KEY", "api-key"), "Specify an NCBI API key")
+	// pFlags := rootCmd.PersistentFlags()
+	// cmdflags.RegisterAllFlags([]cmdflags.FlagInterface{globalDebugFlag}, pFlags)
+	// pFlags.StringVar(&argApiKey, "api-key", useEnv("NCBI_API_KEY", "api-key"), "Specify an NCBI API key")
 
-	pFlags.Uint8Var(&maxNumRetries, "max-retries", 10, "Maximum number of retries on API calls, max 255")
-	if err := pFlags.MarkHidden("max-retries"); err != nil {
-		defaultLogger.Fatalln("Invalid attempt to create hidden flag")
-	}
+	// pFlags.Uint8Var(&maxNumRetries, "max-retries", 10, "Maximum number of retries on API calls, max 255")
+	// if err := pFlags.MarkHidden("max-retries"); err != nil {
+	// 	defaultLogger.Fatalln("Invalid attempt to create hidden flag")
+	// }
 
-	pFlags.StringVar(&argGatewayURL, "gateway-url", useEnv("NCBI_GATEWAY_URL", "gateway-url"), "API endpoint proxy")
-	if err := pFlags.MarkHidden("gateway-url"); err != nil {
-		defaultLogger.Fatalln("Invalid attempt to create hidden flag")
-	}
+	// pFlags.StringVar(&argGatewayURL, "gateway-url", useEnv("NCBI_GATEWAY_URL", "gateway-url"), "API endpoint proxy")
+	// if err := pFlags.MarkHidden("gateway-url"); err != nil {
+	// 	defaultLogger.Fatalln("Invalid attempt to create hidden flag")
+	// }
 
-	pFlags.BoolVar(&argSynMon, "synmon", false, "Mark request as synthetic monitoring")
-	if err := pFlags.MarkHidden("synmon"); err != nil {
-		defaultLogger.Fatalln("Invalid attempt to create hidden flag")
-	}
+	// pFlags.BoolVar(&argSynMon, "synmon", false, "Mark request as synthetic monitoring")
+	// if err := pFlags.MarkHidden("synmon"); err != nil {
+	// 	defaultLogger.Fatalln("Invalid attempt to create hidden flag")
+	// }
 
-	pFlags.BoolP("help", "", false, "Print detailed help about a datasets command")
-	pFlags.BoolP("version", "", false, "Print version of datasets")
+	// pFlags.BoolP("help", "", false, "Print detailed help about a datasets command")
+	// pFlags.BoolP("version", "", false, "Print version of datasets")
 
-	cobra.EnableCommandSorting = false
+	// cobra.EnableCommandSorting = false
 
-	// add top-level commands
-	rootCmd.AddCommand(createSummaryCmd())
-	rootCmd.AddCommand(downloadCmd)
-	rootCmd.AddCommand(rehydrateCmd)
+	// // add top-level commands
+	// rootCmd.AddCommand(createSummaryCmd())
+	// rootCmd.AddCommand(downloadCmd)
+	// rootCmd.AddCommand(rehydrateCmd)
 
-	rootCmd.AddCommand(datasets_command.NewAutocompleteCmd(rootCmd))
-	rootCmd.AddCommand(versionCmd)
+	// rootCmd.AddCommand(datasets_command.NewAutocompleteCmd(rootCmd))
+	// rootCmd.AddCommand(versionCmd)
 
-	rootCmd.SetFlagErrorFunc(cmdflags.ErrorFlagHandler)
+	// rootCmd.SetFlagErrorFunc(cmdflags.ErrorFlagHandler)
 
-	rootCmd.SetHelpCommand(&cobra.Command{
-		Use:    "no-help",
-		Hidden: true,
-	})
+	// rootCmd.SetHelpCommand(&cobra.Command{
+	// 	Use:    "no-help",
+	// 	Hidden: true,
+	// })
 
-	// This has to happen AFTER all subcommands are added
-	setVersionRecursively(rootCmd)
+	// // This has to happen AFTER all subcommands are added
+	// setVersionRecursively(rootCmd)
 
-	clientHeaders["X-Datasets-Client"] = "datasets-cli"
-	clientHeaders["X-Datasets-Client-OS"] = runtime.GOOS
-	clientHeaders["X-Datasets-Client-Arch"] = runtime.GOARCH
-	clientHeaders["X-Datasets-Client-Version"] = AppVersion
-	clientHeaders["X-Datasets-Client-Cmd"] = strings.Join(os.Args[1:], " ")
+	// clientHeaders["X-Datasets-Client"] = "datasets-cli"
+	// clientHeaders["X-Datasets-Client-OS"] = runtime.GOOS
+	// clientHeaders["X-Datasets-Client-Arch"] = runtime.GOARCH
+	// clientHeaders["X-Datasets-Client-Version"] = AppVersion
+	// clientHeaders["X-Datasets-Client-Cmd"] = strings.Join(os.Args[1:], " ")
 
-	ncbi_sid := os.Getenv("HTTP_NCBI_SID")
-	if ncbi_sid != "" {
-		clientHeaders["NCBI-SID"] = ncbi_sid
-	}
+	// ncbi_sid := os.Getenv("HTTP_NCBI_SID")
+	// if ncbi_sid != "" {
+	// 	clientHeaders["NCBI-SID"] = ncbi_sid
+	// }
 
-	ncbi_phid := os.Getenv("HTTP_NCBI_PHID")
-	if ncbi_phid != "" {
-		clientHeaders["NCBI-PHID"] = ncbi_phid
-	} else {
-		clientHeaders["NCBI-PHID"] = GeneratePHID()
-	}
+	// ncbi_phid := os.Getenv("HTTP_NCBI_PHID")
+	// if ncbi_phid != "" {
+	// 	clientHeaders["NCBI-PHID"] = ncbi_phid
+	// } else {
+	// 	clientHeaders["NCBI-PHID"] = GeneratePHID()
+	// }
 
-	if len(argApiKey) > 0 {
-		clientHeaders["api-key"] = argApiKey
-	}
+	// if len(argApiKey) > 0 {
+	// 	clientHeaders["api-key"] = argApiKey
+	// }
 
-	l5d_dtab := os.Getenv("L5D_DTAB")
-	if l5d_dtab != "" {
-		clientHeaders["L5D_DTAB"] = l5d_dtab
-	}
+	// l5d_dtab := os.Getenv("L5D_DTAB")
+	// if l5d_dtab != "" {
+	// 	clientHeaders["L5D_DTAB"] = l5d_dtab
+	// }
 
-	cmdflags.RetrieveTaxIdForTaxon = RetrieveTaxIdForTaxon
+	// cmdflags.RetrieveTaxIdForTaxon = RetrieveTaxIdForTaxon
 }
 
 func getUsageTemplate() string {
