@@ -13,13 +13,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	// cmdflags "datasets_cli/v2/datasets/flags"
 
 	"github.com/gosuri/uiprogress"
-	cleanhttp "github.com/hashicorp/go-cleanhttp"
-	retry_http "github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
 	// openapi "datasets/openapi/v2"
 )
@@ -27,23 +24,6 @@ import (
 var (
 	// AppVersion is the application version string whose value is set at build time
 	AppVersion = "undefined"
-
-	versionMessage string
-	userMessage    string
-	clientHeaders  = make(map[string]string)
-
-	// High level command line arguments
-	argSynMon     bool
-	argApiKey     string
-	argGatewayURL string
-	argNoProgress bool
-	// argsVersion        bool
-
-	// Default retry configuration
-	defaultRetryWaitMin = 1 * time.Second
-	defaultRetryWaitMax = 30 * time.Second
-
-	maxNumRetries = uint8(10)
 
 	// defaultLogger is the logger provided with defaultClient
 	defaultLogger = log.New(io.Discard, "", log.LstdFlags)
@@ -220,27 +200,6 @@ func baseRetryPolicy(resp *http.Response, err error) (bool, error) {
 	return false, nil
 }
 
-func newRetryHttpClient(numRetries uint8) *http.Client {
-	retryClient := retry_http.Client{
-		HTTPClient:   cleanhttp.DefaultPooledClient(),
-		Logger:       defaultLogger,
-		RetryWaitMin: defaultRetryWaitMin,
-		RetryWaitMax: defaultRetryWaitMax,
-		RetryMax:     int(numRetries),
-		CheckRetry:   DefaultRetryPolicy,
-		Backoff:      retry_http.DefaultBackoff,
-	}
-	return retryClient.StandardClient()
-}
-
-func initRetryableClient() *http.Client {
-	c := newRetryHttpClient(maxNumRetries)
-	t := c.Transport
-	c.Transport = LoggingRoundTripper{Proxied: t}
-
-	return c
-}
-
 // func createOAClient() (cli *openapi.APIClient, err error) {
 // 	cfg := openapi.NewConfiguration()
 
@@ -277,45 +236,6 @@ func initRetryableClient() *http.Client {
 // 	cfg.Servers = configs
 // 	return
 // }
-
-func checkResponseHeaders(resp *http.Response) (err error) {
-	if resp == nil {
-		err = errors.New("Bad response")
-		return
-	}
-
-	// fmt.Println("Num headers: " + strconv.Itoa(len(resp.Header)))
-	// Validation (checkmarx)
-	if len(resp.Header) > 256 {
-		err = errors.New("Number of headers exceeded maximum count: " + strconv.Itoa(len(resp.Header)))
-		return
-	}
-
-	for key, value := range resp.Header {
-		switch key {
-		case "X-Datasets-Version-Message":
-			if versionMessage == "" {
-				fmt.Fprintln(os.Stderr, value[0])
-				versionMessage = value[0]
-			}
-
-		case "X-Datasets-User-Message":
-			if userMessage == "" {
-				fmt.Fprintln(os.Stderr, value[0])
-				userMessage = value[0]
-			}
-		}
-	}
-	return
-}
-
-func strToInt32List(strs []string) (geneInts []int32) {
-	var err error = nil
-	if geneInts, err = strToInt32ListErr(strs); err != nil {
-		defaultLogger.Println("Failure to coerce input to integer: ", err)
-	}
-	return
-}
 
 func strToInt32ListErr(strs []string) (geneInts []int32, err error) {
 	hasError := false
@@ -374,27 +294,6 @@ func ParentCommandRunE(*cobra.Command, []string) error {
 // 	}
 // 	return err.Error()
 // }
-
-func handleHTTPResponseError(resp *http.Response, inError error) (err error) {
-	if inError == nil {
-		err = checkResponseHeaders(resp)
-		return
-	}
-	rootCmd.SilenceUsage = true
-	// msg := getGatewayRuntimeError(inError)
-	// if msg != "" {
-	// 	err = errors.New("[gateway] " + msg)
-	// 	return
-	// }
-
-	if resp != nil && resp.StatusCode >= 300 {
-		err = errors.New(resp.Status)
-		return
-	}
-
-	err = inError
-	return
-}
 
 func handleHTTPResponseWithCustomErr(resp *http.Response, inError error, printfTemplate string) (err error) {
 	// e := CreateErrorMessageFromMessageOrError(resp, inError, printfTemplate)
