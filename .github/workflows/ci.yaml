@@ -8,13 +8,16 @@ defaults:
     working-directory: ./client
 jobs:
   build-and-test:
-    runs-on:
-        - ubuntu-latest
-        - ubuntu-24.04-arm
-        - macos-latest # arm64
-        - macos-13 # osx-64
-        - windows-latest
-        - windows-11-arm
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+          - macos-latest # arm64
+          - macos-13 # osx-64
+          - windows-latest
+          - windows-11-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
