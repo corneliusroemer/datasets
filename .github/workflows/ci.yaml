@@ -10,6 +10,7 @@ jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
@@ -49,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success()
         with:
-          name: datasets-binary
+          name: datasets-${{ matrix.os }}
           path: client/bazel-bin/apps/public/Datasets/v2/cmd/datasets/datasets_/datasets
